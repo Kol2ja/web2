@@ -1,5 +1,6 @@
 class UsersModel:
     """Сущность пользователей"""
+
     def __init__(self, connection):
         self.connection = connection
 
@@ -50,6 +51,7 @@ class UsersModel:
 
 class DealersModel:
     """Сущность дилерских центров"""
+
     def __init__(self, connection):
         self.connection = connection
 
@@ -106,6 +108,7 @@ class DealersModel:
 
 class CarsModel:
     """Сущность автомобилей"""
+
     def __init__(self, connection):
         self.connection = connection
 
@@ -118,7 +121,9 @@ class CarsModel:
                              price INTEGER,
                              power INTEGER,
                              color VARCHAR(20),
-                             dealer INTEGER
+                             dealer INTEGER,
+                             rating VARCHAR(20),
+                             col INTEGER
                         )''')
         cursor.close()
         self.connection.commit()
@@ -127,9 +132,9 @@ class CarsModel:
         """Добавление автомобиля"""
         cursor = self.connection.cursor()
         cursor.execute('''INSERT INTO cars 
-                          (model, price, power, color, dealer) 
-                          VALUES (?,?,?,?,?)''',
-                       (model, str(price), str(power), color, str(dealer)))
+                          (model, price, power, color, dealer, rating,col) 
+                          VALUES (?,?,?,?,?,?,?)''',
+                       (model, str(price), str(power), color, str(dealer), '0', '0'))
         cursor.close()
         self.connection.commit()
 
@@ -143,29 +148,32 @@ class CarsModel:
 
     def get(self, car_id):
         """Поиск автомобиля по id"""
+        print(car_id)
         cursor = self.connection.cursor()
-        cursor.execute("SELECT * FROM cars WHERE car_id = ?", (str(car_id)))
+        cursor.execute("SELECT * FROM cars WHERE car_id = ?", (str(car_id),))
         row = cursor.fetchone()
+        print(row)
         return row
 
     def get_all(self):
         """Запрос всех автомобилей"""
         cursor = self.connection.cursor()
-        cursor.execute("SELECT model, price, car_id FROM cars")
+        cursor.execute("SELECT model, price, car_id, power FROM cars")
         rows = cursor.fetchall()
         return rows
 
     def delete(self, car_id):
         """Удаление автомобиля"""
         cursor = self.connection.cursor()
-        cursor.execute('''DELETE FROM cars WHERE car_id = ?''', (str(car_id)))
+        cursor.execute('''DELETE FROM cars WHERE car_id = ?''', (str(car_id),))
         cursor.close()
         self.connection.commit()
 
     def get_by_price(self, start_price, end_price):
         """Запрос автомобилей по цене"""
         cursor = self.connection.cursor()
-        cursor.execute("SELECT model, price, car_id FROM cars WHERE price >= ? AND price <= ?", (str(start_price), str(end_price)))
+        cursor.execute("SELECT model, price, car_id FROM cars WHERE price >= ? AND price <= ?",
+                       (str(start_price), str(end_price)))
         row = cursor.fetchall()
         return row
 
@@ -175,3 +183,34 @@ class CarsModel:
         cursor.execute("SELECT model, price, car_id FROM cars WHERE dealer = ?", (str(dealer_id)))
         row = cursor.fetchall()
         return row
+
+    def redak(self, car_id, colorp):
+        cursor = self.connection.cursor()
+        cursor.execute("SELECT * FROM cars WHERE car_id = ?", (str(car_id)))
+        row = cursor.fetchone()
+        print(row)
+        id, model, price, power, color, dealer, rating, col = row
+        color = colorp
+        cursor.execute('''DELETE FROM cars WHERE car_id = ?''', (str(car_id)))
+        cursor.execute('''INSERT INTO cars 
+                          (model, price, power, color, dealer, rating,col) 
+                          VALUES (?,?,?,?,?,?,?)''',
+                       (model, str(price), str(power), color, str(dealer), rating, str(col)))
+        cursor.close()
+        self.connection.commit()
+
+    def sred(self, car_id, ratin):
+        cursor = self.connection.cursor()
+        cursor.execute("SELECT * FROM cars WHERE car_id = ?", (str(car_id),))
+        row = cursor.fetchone()
+        id, model, price, power, color, dealer, rating, col = row
+        col += 1
+        print(row)
+        rating = str(round((float(rating) * (col - 1) + int(ratin)) / col, 15))
+        cursor.execute('''DELETE FROM cars WHERE car_id = ?''', (str(car_id),))
+        cursor.execute('''INSERT INTO cars 
+                          (model, price, power, color, dealer, rating,col) 
+                          VALUES (?,?,?,?,?,?,?)''',
+                       (model, str(price), str(power), color, str(dealer), rating, str(col)))
+        cursor.close()
+        self.connection.commit()

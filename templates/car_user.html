@@ -5,6 +5,7 @@
     <div class="btn-group btn-group-lg" role="group" aria-label="Действия">
         <a href="{{ url_for('search_price') }}"><button type="button" class="btn btn-info">Фильтр по цене</button></a>
         <a href="{{ url_for('search_dealer') }}"><button type="button" class="btn btn-info">Фильтр по дилерскому центру</button></a>
+        <a href="{{ url_for('search_mo') }}"><button type="button" class="btn btn-info">Сортировка по мощности</button></a>
     </div>
 
     {% for item in cars %}

@@ -6,10 +6,11 @@
           <p class="lead">Стоимость: {{ car[2] }}</p>
           <hr class="my-4">
           <p>Мощность (л.с.): {{ car[3] }}</p>
-            <p>Оценка {{ car[6] }}</p>
+            <p>Оценка {{ car[5] }}</p>
           <p>Цвет: {{ car[4] }}</p>
             <p>Дилерский центр: {{ dealer }}</p>
         </div>
         <a href="/index"> <button type="button" class="btn btn-outline-info">Назад</button></a>
-        <a href="/rating/{{car[0]}}"> <button type="button" class="btn btn-outline-info">Поставить оценку</button></a>
+        <a href="/redak/{{ car[0]}}"> <button type="button" class="btn btn-outline-info">Изменить цвет</a>
+        <a href="/cardel/{{ car[0]}}"> <button type="button" class="btn btn-outline-info">Удалить</button></a>
 {% endblock %}

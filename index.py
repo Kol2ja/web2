@@ -156,6 +156,7 @@ def car(car_id):
         return redirect('/login')
     # если  админ, то его на спец страницу с возможностью менять цвет
     car = CarsModel(db.get_connection()).get(car_id)
+    print(car)
     dealer = DealersModel(db.get_connection()).get(car[5])
     if session['username'] == 'admin':
         # странца админа с кнопкой редактирования
@@ -222,6 +223,23 @@ def search_mo():
     print(cars)
     cars = sorted(cars, key=lambda x: x[3])
     return render_template('car_user.html', username=session['username'], title='Просмотр базы', cars=cars)
+
+@app.route('/rating/<int:car_id>', methods=['GET', 'POST'])
+def rating(car_id):
+    """
+    Запрос автомобилей, продающихся в определенном дилерском центре
+    """
+    form = SearchDealerForm()
+    form.dealer_id.choices = [(0, '0'), (1, '1'), (2, '2'), (3, '3'), (4, '4'), (5, '5')]
+    if form.validate_on_submit():
+        #
+        if form.dealer_id.data != '0':
+            CarsModel(db.get_connection()).sred(car_id, form.dealer_id.data)
+        # редирект на главную страницу
+        cars = CarsModel(db.get_connection()).get_all()
+        return render_template('car_user.html', username=session['username'], title='Просмотр базы', cars=cars)
+    return render_template("search_dealer.html", title='Подбор по цене', form=form)
+
 
 
 @app.route('/search_dealer', methods=['GET', 'POST'])
