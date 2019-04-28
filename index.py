@@ -211,6 +211,19 @@ def search_price():
     return render_template("search_price.html", title='Подбор по цене', form=form)
 
 
+@app.route('/search_mo', methods=['GET'])
+def search_mo():
+    """
+    Запрос автомобилей, удовлетворяющих определенной цене
+    """
+    # получить все машины по определенной цене
+    cars = CarsModel(db.get_connection()).get_all()
+    # редирект на страницу с результатами
+    print(cars)
+    cars = sorted(cars, key=lambda x: x[3])
+    return render_template('car_user.html', username=session['username'], title='Просмотр базы', cars=cars)
+
+
 @app.route('/search_dealer', methods=['GET', 'POST'])
 def search_dealer():
     """
