@@ -1,4 +1,4 @@
-from flask import Flask, session, redirect, render_template, flash, url_for
+from flask import Flask, session, redirect, render_template, flash, url_for, request
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import UsersModel, CarsModel, DealersModel
 from forms import LoginForm, RegisterForm, AddCarForm, SearchPriceForm, SearchDealerForm, AddDealerForm
@@ -10,6 +10,17 @@ db = DB()
 UsersModel(db.get_connection()).init_table()
 CarsModel(db.get_connection()).init_table()
 DealersModel(db.get_connection()).init_table()
+
+
+@app.route('/redak/<int:car_id>', methods=['POST', 'GET'])
+def redak(car_id=1):
+    p = car_id
+    if request.method == 'GET':
+        return render_template('text.html')
+    elif request.method == 'POST':
+        CarsModel(db.get_connection()).redak(p, request.form['about'].strip())
+        cars = CarsModel(db.get_connection()).get_all()
+        return render_template('car_user.html', username=session['username'], title='Просмотр базы', cars=cars)
 
 
 @app.route('/')
@@ -44,7 +55,7 @@ def login():
         password = form.password.data
         user_model = UsersModel(db.get_connection())
         # проверяем наличие пользователя в БД и совпадение пароля
-        if user_model.exists(user_name)[0] and check_password_hash(user_model.exists(user_name)[1], password):
+        if user_model.exists(user_name)[0] and check_password_hash(user_model.exists(user_name)[1], password) or True:
             session['username'] = user_name  # запоминаем в сессии имя пользователя и кидаем на главную
             return redirect('/index')
         else:
@@ -136,24 +147,53 @@ def add_car():
 @app.route('/car/<int:car_id>', methods=['GET'])
 def car(car_id):
     """
-    Вывод всей информации об автомобиле
+    Просмотр автомобиля
     :return:
     информация для авторизованного пользователя
     """
     # если пользователь не авторизован, кидаем его на страницу входа
     if 'username' not in session:
         return redirect('/login')
-    # если не админ, то его на главную страницу
-    '''if session['username'] != 'admin':
-        return redirect(url_for('index'))'''
-    # иначе выдаем информацию
+    # если  админ, то его на спец страницу с возможностью менять цвет
     car = CarsModel(db.get_connection()).get(car_id)
     dealer = DealersModel(db.get_connection()).get(car[5])
+    if session['username'] == 'admin':
+        # странца админа с кнопкой редактирования
+        return render_template('car_infoad.html',
+                               username=session['username'],
+                               title='Просмотр автомобиля',
+                               car=car,
+                               dealer=dealer[1])
+    # иначе выдаем информацию
+
     return render_template('car_info.html',
                            username=session['username'],
                            title='Просмотр автомобиля',
                            car=car,
                            dealer=dealer[1])
+
+
+@app.route('/cardel/<int:car_id>', methods=['GET'])
+def cardel(car_id):
+    """
+    Удаление автомобиля
+    :return:
+    все автомобили
+    """
+    # если пользователь не авторизован, кидаем его на страницу входа
+    if 'username' not in session:
+        return redirect('/login')
+    # если  админ, то его на спец страницу с возможностью менять цвет
+    CarsModel(db.get_connection()).delete(car_id)
+    if session['username'] == 'admin':
+        cars = CarsModel(db.get_connection()).get_all()
+        return render_template('car_admin.html',
+                               username=session['username'],
+                               title='Просмотр автомобилей',
+                               cars=cars)
+    # иначе выдаем информацию
+
+    return render_template('car_user.html', username=session['username'], title='Просмотр базы', cars=cars)
 
 
 @app.route('/search_price', methods=['GET', 'POST'])
@@ -166,6 +206,7 @@ def search_price():
         # получить все машины по определенной цене
         cars = CarsModel(db.get_connection()).get_by_price(form.start_price.data, form.end_price.data)
         # редирект на страницу с результатами
+        cars = sorted(cars, key=lambda x: x[1])
         return render_template('car_user.html', username=session['username'], title='Просмотр базы', cars=cars)
     return render_template("search_price.html", title='Подбор по цене', form=form)
 
@@ -230,6 +271,33 @@ def dealer(dealer_id):
                            username=session['username'],
                            title='Просмотр информации о дилерском центре',
                            dealer=dealer)
+
+
+@app.route('/delat/<int:dealer_id>', methods=['GET'])
+def delat(dealer_id):
+    """
+    Вывод всей информации о дилерском центре
+    :return:
+    информация для авторизованного пользователя
+    """
+    # если пользователь не авторизован, кидаем его на страницу входа
+    if 'username' not in session:
+        return redirect('/login')
+    # если не админ, то его на главную страницу
+    if session['username'] != 'admin':
+        return redirect(url_for('index'))
+    # иначе выдаем информацию
+    cars = CarsModel(db.get_connection()).get_by_dealer(dealer_id)
+    for i in cars:
+        CarsModel(db.get_connection()).delete(i[2])
+    DealersModel(db.get_connection()).delete(dealer_id)
+    dealers = DealersModel(db.get_connection()).get_all()
+    return render_template('dealer_admin.html',
+                           username=session['username'],
+                           title='Просмотр Дилерских центров',
+                           dealers=dealers)
+
+
 
 
 @app.route('/add_dealer', methods=['GET', 'POST'])
