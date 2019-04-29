@@ -1,36 +1,33 @@
 from flask import Flask, session, redirect, render_template, flash, url_for, request
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import UsersModel, CarsModel, DealersModel
-from forms import LoginForm, RegisterForm, AddCarForm, SearchPriceForm, SearchDealerForm, AddDealerForm
+from models import UsersModel, Book, genre_Book
+from forms import LoginForm, RegisterForm, AddbookForm, SearchPriceForm, SearchgenreForm, AddgenreForm
 from db import DB
-print('a')
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 db = DB()
 UsersModel(db.get_connection()).init_table()
-CarsModel(db.get_connection()).init_table()
-DealersModel(db.get_connection()).init_table()
+Book(db.get_connection()).init_table()
+genre_Book(db.get_connection()).init_table()
 
 
-@app.route('/redak/<int:car_id>', methods=['POST', 'GET'])
-def redak(car_id=1):
-    p = car_id
+@app.route('/redak/<int:book_id>', methods=['POST', 'GET'])
+def redak(book_id=1):
+    # редактирование записей кидаем на главную
+    p = book_id
     if request.method == 'GET':
         return render_template('text.html')
     elif request.method == 'POST':
-        CarsModel(db.get_connection()).redak(p, request.form['about'].strip())
-        cars = CarsModel(db.get_connection()).get_all()
-        return render_template('car_user.html', username=session['username'], title='Просмотр базы', cars=cars)
+        Book(db.get_connection()).redak(p, request.form['about'].strip())
+        books = Book(db.get_connection()).get_all()
+        return render_template('Book_admin.html', username=session['username'], title='Просмотр базы', books=books)
 
 
 @app.route('/')
 @app.route('/index')
 def index():
-    """
-    Главная страница
-    :return:
-    Основная страница сайта, либо редирект на авторизацю
-    """
+    # Главная страница Основная страница сайта, либо редирект на авторизацю
     # если пользователь не авторизован, кидаем его на страницу входа
     if 'username' not in session:
         return redirect('/login')
@@ -38,17 +35,13 @@ def index():
     if session['username'] == 'admin':
         return render_template('index_admin.html', username=session['username'])
     # если обычный пользователь, то его на свою
-    cars = CarsModel(db.get_connection()).get_all()
-    return render_template('car_user.html', username=session['username'], title='Просмотр базы', cars=cars)
+    books = Book(db.get_connection()).get_all()
+    return render_template('book_user.html', username=session['username'], title='Просмотр базы', books=books)
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    """
-    Страница авторизации
-    :return:
-    переадресация на главную, либо вывод формы авторизации
-    """
+    # Страница авторизации переадресация на главную, либо вывод формы авторизации
     form = LoginForm()
     if form.validate_on_submit():  # ввели логин и пароль
         user_name = form.username.data
@@ -65,19 +58,14 @@ def login():
 
 @app.route('/logout')
 def logout():
-    """
-    Выход из системы
-    :return:
-    """
+    # Выход из системы
     session.pop('username', 0)
     return redirect('/login')
 
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    """
-    Форма регистрации
-    """
+    # Форма регистрации
     form = RegisterForm()
     if form.validate_on_submit():
         # создать пользователя
@@ -92,16 +80,12 @@ def register():
     return render_template("register.html", title='Регистрация пользователя', form=form)
 
 
-"""Работа с автомобилями"""
+"""Работа с Книгами"""
 
 
-@app.route('/car_admin', methods=['GET'])
-def car_admin():
-    """
-    Вывод всей информации об всех автомобилях
-    :return:
-    информация для авторизованного пользователя
-    """
+@app.route('/Book_admin', methods=['GET'])
+def Book_admin():
+    # Вывод всей информации об всех книгах информация для авторизованного пользователя
     # если пользователь не авторизован, кидаем его на страницу входа
     if 'username' not in session:
         return redirect('/login')
@@ -110,164 +94,140 @@ def car_admin():
         flash('Доступ запрещен')
         redirect('index')
     # если обычный пользователь, то его на свою
-    cars = CarsModel(db.get_connection()).get_all()
-    return render_template('car_admin.html',
+    books = Book(db.get_connection()).get_all()
+    return render_template('Book_admin.html',
                            username=session['username'],
-                           title='Просмотр автомобилей',
-                           cars=cars)
+                           title='Просмотр книг',
+                           books=books)
 
 
-@app.route('/add_car', methods=['GET', 'POST'])
-def add_car():
-    """
-    Добавление автомобиля
-    """
+@app.route('/add_book', methods=['GET', 'POST'])
+def add_book():
+    # Добавление книги
     # если пользователь не авторизован, кидаем его на страницу входа
     if 'username' not in session:
         return redirect('login')
     # если админ, то его на свою страницу
     if session['username'] != 'admin':
         return redirect('index')
-    form = AddCarForm()
-    available_dealers = [(i[0], i[1]) for i in DealersModel(db.get_connection()).get_all()]
-    form.dealer_id.choices = available_dealers
+    form = AddbookForm()
+    available_genres = [(i[0], i[1]) for i in genre_Book(db.get_connection()).get_all()]
+    form.genre_id.choices = available_genres
     if form.validate_on_submit():
-        # создать автомобиль
-        cars = CarsModel(db.get_connection())
-        cars.insert(model=form.model.data,
-                    price=form.price.data,
-                    power=form.power.data,
-                    color=form.color.data,
-                    dealer=form.dealer_id.data)
+        # создать книгу
+        books = Book(db.get_connection())
+        books.insert(model=form.model.data,
+                     price=form.price.data,
+                     power=form.power.data,
+                     color=form.color.data,
+                     genre=form.genre_id.data)
         # редирект на главную страницу
-        return redirect(url_for('car_admin'))
-    return render_template("add_car.html", title='Добавление автомобиля', form=form)
+        return redirect(url_for('Book_admin'))
+    return render_template("add_book.html", title='Добавление книги', form=form)
 
 
-@app.route('/car/<int:car_id>', methods=['GET'])
-def car(car_id):
-    """
-    Просмотр автомобиля
-    :return:
-    информация для авторизованного пользователя
-    """
+@app.route('/book/<int:book_id>', methods=['GET'])
+def book(book_id):
+    # Просмотр книги информация для авторизованного пользователя
     # если пользователь не авторизован, кидаем его на страницу входа
     if 'username' not in session:
         return redirect('/login')
-    # если  админ, то его на спец страницу с возможностью менять цвет
-    car = CarsModel(db.get_connection()).get(car_id)
-    print(car)
-    dealer = DealersModel(db.get_connection()).get(car[5])
+    # если  админ, то его на спец страницу с возможностью менять описание
+    book = Book(db.get_connection()).get(book_id)
+    genre = genre_Book(db.get_connection()).get(book[5])
     if session['username'] == 'admin':
         # странца админа с кнопкой редактирования
-        return render_template('car_infoad.html',
+        return render_template('book_infoad.html',
                                username=session['username'],
-                               title='Просмотр автомобиля',
-                               car=car,
-                               dealer=dealer[1])
+                               title='Просмотр книги',
+                               book=book,
+                               genre=genre[1])
     # иначе выдаем информацию
 
-    return render_template('car_info.html',
+    return render_template('book_info.html',
                            username=session['username'],
-                           title='Просмотр автомобиля',
-                           car=car,
-                           dealer=dealer[1])
+                           title='Просмотр книги',
+                           book=book,
+                           genre=genre[1])
 
 
-@app.route('/cardel/<int:car_id>', methods=['GET'])
-def cardel(car_id):
-    """
-    Удаление автомобиля
-    :return:
-    все автомобили
-    """
+@app.route('/bookdel/<int:book_id>', methods=['GET'])
+def bookdel(book_id):
+    # Удаление книги
     # если пользователь не авторизован, кидаем его на страницу входа
     if 'username' not in session:
         return redirect('/login')
-    # если  админ, то его на спец страницу с возможностью менять цвет
-    CarsModel(db.get_connection()).delete(car_id)
+    # если  админ, то его на спец страницу с возможностью менять описание
+    Book(db.get_connection()).delete(book_id)
     if session['username'] == 'admin':
-        cars = CarsModel(db.get_connection()).get_all()
-        return render_template('car_admin.html',
+        books = Book(db.get_connection()).get_all()
+        return render_template('Book_admin.html',
                                username=session['username'],
-                               title='Просмотр автомобилей',
-                               cars=cars)
+                               title='Просмотр книг',
+                               books=books)
     # иначе выдаем информацию
-
-    return render_template('car_user.html', username=session['username'], title='Просмотр базы', cars=cars)
+    books = Book(db.get_connection()).get_all()
+    return render_template('book_user.html', username=session['username'], title='Просмотр базы', books=books)
 
 
 @app.route('/search_price', methods=['GET', 'POST'])
 def search_price():
-    """
-    Запрос автомобилей, удовлетворяющих определенной цене
-    """
+    # Запрос книг, удовлетворяющих определенной цене
     form = SearchPriceForm()
     if form.validate_on_submit():
-        # получить все машины по определенной цене
-        cars = CarsModel(db.get_connection()).get_by_price(form.start_price.data, form.end_price.data)
+        # получить все книги по определенной цене
+        books = Book(db.get_connection()).get_by_price(form.start_price.data, form.end_price.data)
         # редирект на страницу с результатами
-        cars = sorted(cars, key=lambda x: x[1])
-        return render_template('car_user.html', username=session['username'], title='Просмотр базы', cars=cars)
+        books = sorted(books, key=lambda x: x[1])
+        return render_template('book_user.html', username=session['username'], title='Просмотр базы', books=books)
     return render_template("search_price.html", title='Подбор по цене', form=form)
 
 
 @app.route('/search_mo', methods=['GET'])
 def search_mo():
-    """
-    Запрос автомобилей, удовлетворяющих определенной цене
-    """
-    # получить все машины по определенной цене
-    cars = CarsModel(db.get_connection()).get_all()
+    # Запрос книг, удовлетворяющих определенной цене
+    # получить все книги по определенной цене
+    books = Book(db.get_connection()).get_all()
     # редирект на страницу с результатами
-    print(cars)
-    cars = sorted(cars, key=lambda x: x[3])
-    return render_template('car_user.html', username=session['username'], title='Просмотр базы', cars=cars)
+    books = sorted(books, key=lambda x: x[3])
+    return render_template('book_user.html', username=session['username'], title='Просмотр базы', books=books)
 
-@app.route('/rating/<int:car_id>', methods=['GET', 'POST'])
-def rating(car_id):
-    """
-    Запрос автомобилей, продающихся в определенном дилерском центре
-    """
-    form = SearchDealerForm()
-    form.dealer_id.choices = [(0, '0'), (1, '1'), (2, '2'), (3, '3'), (4, '4'), (5, '5')]
+
+@app.route('/rating/<int:book_id>', methods=['GET', 'POST'])
+def rating(book_id):
+    # Запрос книг, продающихся в определенном жанре
+    form = SearchgenreForm()
+    form.genre_id.choices = [(0, '0'), (1, '1'), (2, '2'), (3, '3'), (4, '4'), (5, '5')]
     if form.validate_on_submit():
         #
-        if form.dealer_id.data != '0':
-            CarsModel(db.get_connection()).sred(car_id, form.dealer_id.data)
+        if form.genre_id.data != '0':
+            Book(db.get_connection()).sred(book_id, form.genre_id.data)
         # редирект на главную страницу
-        cars = CarsModel(db.get_connection()).get_all()
-        return render_template('car_user.html', username=session['username'], title='Просмотр базы', cars=cars)
-    return render_template("search_dealer.html", title='Подбор по цене', form=form)
+        books = Book(db.get_connection()).get_all()
+        return render_template('book_user.html', username=session['username'], title='Просмотр базы', books=books)
+    return render_template("search_genre.html", title='Подбор по цене', form=form)
 
 
-
-@app.route('/search_dealer', methods=['GET', 'POST'])
-def search_dealer():
-    """
-    Запрос автомобилей, продающихся в определенном дилерском центре
-    """
-    form = SearchDealerForm()
-    available_dealers = [(i[0], i[1]) for i in DealersModel(db.get_connection()).get_all()]
-    form.dealer_id.choices = available_dealers
+@app.route('/search_genre', methods=['GET', 'POST'])
+def search_genre():
+    # Запрос книг, продающихся в определенном жанре
+    form = SearchgenreForm()
+    available_genres = [(i[0], i[1]) for i in genre_Book(db.get_connection()).get_all()]
+    form.genre_id.choices = available_genres
     if form.validate_on_submit():
         #
-        cars = CarsModel(db.get_connection()).get_by_dealer(form.dealer_id.data)
+        books = Book(db.get_connection()).get_by_genre(form.genre_id.data)
         # редирект на главную страницу
-        return render_template('car_user.html', username=session['username'], title='Просмотр базы', cars=cars)
-    return render_template("search_dealer.html", title='Подбор по цене', form=form)
+        return render_template('book_user.html', username=session['username'], title='Просмотр базы', books=books)
+    return render_template("search_genre.html", title='Подбор по цене', form=form)
 
 
-'''Работа с дилерским центром'''
+'''Работа с жанром'''
 
 
-@app.route('/dealer_admin', methods=['GET'])
-def dealer_admin():
-    """
-    Вывод всей информации об всех дилерских центрах
-    :return:
-    информация для авторизованного пользователя
-    """
+@app.route('/genre_admin', methods=['GET'])
+def genre_admin():
+    # Вывод всей информации об всех жанрах информация для авторизованного пользователя
     # если пользователь не авторизован, кидаем его на страницу входа
     if 'username' not in session:
         return redirect('/login')
@@ -276,20 +236,16 @@ def dealer_admin():
         flash('Доступ запрещен')
         redirect('index')
     # иначе это админ
-    dealers = DealersModel(db.get_connection()).get_all()
-    return render_template('dealer_admin.html',
+    genres = genre_Book(db.get_connection()).get_all()
+    return render_template('genre_admin.html',
                            username=session['username'],
-                           title='Просмотр Дилерских центров',
-                           dealers=dealers)
+                           title='Просмотр жанров',
+                           genres=genres)
 
 
-@app.route('/dealer/<int:dealer_id>', methods=['GET'])
-def dealer(dealer_id):
-    """
-    Вывод всей информации о дилерском центре
-    :return:
-    информация для авторизованного пользователя
-    """
+@app.route('/genre/<int:genre_id>', methods=['GET'])
+def genre(genre_id):
+    # Вывод всей информации о жанре нформация для авторизованного пользователя
     # если пользователь не авторизован, кидаем его на страницу входа
     if 'username' not in session:
         return redirect('/login')
@@ -297,20 +253,16 @@ def dealer(dealer_id):
     if session['username'] != 'admin':
         return redirect(url_for('index'))
     # иначе выдаем информацию
-    dealer = DealersModel(db.get_connection()).get(dealer_id)
-    return render_template('dealer_info.html',
+    genre = genre_Book(db.get_connection()).get(genre_id)
+    return render_template('genre_info.html',
                            username=session['username'],
-                           title='Просмотр информации о дилерском центре',
-                           dealer=dealer)
+                           title='Просмотр информации о жанре',
+                           genre=genre)
 
 
-@app.route('/delat/<int:dealer_id>', methods=['GET'])
-def delat(dealer_id):
-    """
-    Вывод всей информации о дилерском центре
-    :return:
-    информация для авторизованного пользователя
-    """
+@app.route('/delat/<int:genre_id>', methods=['GET'])
+def delat(genre_id):
+    # Вывод всей информации о жанре информация для авторизованного пользователя
     # если пользователь не авторизован, кидаем его на страницу входа
     if 'username' not in session:
         return redirect('/login')
@@ -318,37 +270,33 @@ def delat(dealer_id):
     if session['username'] != 'admin':
         return redirect(url_for('index'))
     # иначе выдаем информацию
-    cars = CarsModel(db.get_connection()).get_by_dealer(dealer_id)
-    for i in cars:
-        CarsModel(db.get_connection()).delete(i[2])
-    DealersModel(db.get_connection()).delete(dealer_id)
-    dealers = DealersModel(db.get_connection()).get_all()
-    return render_template('dealer_admin.html',
+    books = Book(db.get_connection()).get_by_genre(genre_id)
+    for i in books:
+        Book(db.get_connection()).delete(i[2])
+    genre_Book(db.get_connection()).delete(genre_id)
+    genres = genre_Book(db.get_connection()).get_all()
+    return render_template('genre_admin.html',
                            username=session['username'],
-                           title='Просмотр Дилерских центров',
-                           dealers=dealers)
+                           title='Просмотр жанров',
+                           genres=genres)
 
 
-
-
-@app.route('/add_dealer', methods=['GET', 'POST'])
-def add_dealer():
-    """
-    Добавление дилерского центра и вывод на экран информации о нем
-    """
+@app.route('/add_genre', methods=['GET', 'POST'])
+def add_genre():
+    # Добавление жанра и вывод на экран информации о нем
     # если пользователь не авторизован, кидаем его на страницу входа
     if 'username' not in session:
         return redirect('/login')
     # если админ, то его на свою страницу
     if session['username'] == 'admin':
-        form = AddDealerForm()
+        form = AddgenreForm()
         if form.validate_on_submit():
-            # создать дилера
-            dealers = DealersModel(db.get_connection())
-            dealers.insert(name=form.name.data, address=form.address.data)
+            # создать жанр
+            genres = genre_Book(db.get_connection())
+            genres.insert(name=form.name.data, infoganre=form.infoganre.data)
             # редирект на главную страницу
             return redirect(url_for('index'))
-        return render_template("add_dealer.html", title='Добавление дилерского центра', form=form)
+        return render_template("add_genre.html", title='Добавление жанра', form=form)
 
 
 if __name__ == '__main__':

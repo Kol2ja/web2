@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>Подбор книги по цене</h1>
+    <h1>Подбор жанра</h1>
 
     {% with messages = get_flashed_messages() %}
       {% if messages %}
@@ -16,18 +16,9 @@
     <form action="" method="POST" novalidate>
         {{ form.hidden_tag() }}
         <p>
-            {{ form.start_price.label }}<br>
-            {{ form.start_price }}<br>
-            {% for error in form.start_price.errors %}
-                <div class="alert alert-danger" role="alert">
-                    {{ error }}
-                </div>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.end_price.label }}<br>
-            {{ form.end_price }}<br>
-            {% for error in form.end_price.errors %}
+            {{ form.genre_id.label }}<br>
+            {{ form.genre_id }}<br>
+            {% for error in form.genre_id.errors %}
                 <div class="alert alert-danger" role="alert">
                     {{ error }}
                 </div>

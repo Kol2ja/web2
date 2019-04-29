@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+        <div class="jumbotron">
+          <h1 class="display-4">{{ genre[1] }}</h1>
+          <p class="lead">Адрес: {{ genre[2] }}</p>
+          <hr class="my-4">
+          <p>Другой информации я о жанрах не придумал/p>
+        </div>
+        <a href="/delat/{{ genre[0]}}"> <button type="button" class="btn btn-outline-info">Удалить жанр</a>
+        <a href="/genre_admin"> <button type="button" class="btn btn-outline-info">Назад</button></a>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+        <div class="jumbotron">
+          <h1 class="display-4">{{ book[1] }}</h1>
+          <p class="lead">Стоимость: {{ book[2] }}</p>
+          <hr class="my-4">
+          <p>кол. проданных книг: {{ book[3] }}</p>
+            <p>Оценка {{ book[5] }}</p>
+          <p>описание: {{ book[4] }}</p>
+            <p>код жанра: {{ genre }}</p>
+        </div>
+        <a href="/index"> <button type="button" class="btn btn-outline-info">Назад</button></a>
+        <a href="/redak/{{ book[0]}}"> <button type="button" class="btn btn-outline-info">Изменить описание</a>
+        <a href="/bookdel/{{ book[0]}}"> <button type="button" class="btn btn-outline-info">Удалить</button></a>
+{% endblock %}

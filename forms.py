@@ -21,21 +21,21 @@ class RegisterForm(FlaskForm):
     submit = SubmitField('Создать учетную запись')
 
 
-class AddCarForm(FlaskForm):
-    """Форма добавления автомобиля"""
-    model = StringField('Модель', validators=[DataRequired()])
+class AddbookForm(FlaskForm):
+    """Форма добавления книги"""
+    model = StringField('Название', validators=[DataRequired()])
     price = IntegerField('Цена', validators=[DataRequired()])
-    power = IntegerField('Мощность (л.с.)', validators=[DataRequired()])
-    color = StringField('Цвет', validators=[DataRequired()])
-    dealer_id = SelectField('Номер дилерского центра', coerce=int, validators=[DataRequired()])
-    submit = SubmitField('Добавить автомобиль')
+    power = IntegerField('колдичество проданных', validators=[DataRequired()])
+    color = StringField('Описание', validators=[DataRequired()])
+    genre_id = SelectField('Код издательства', coerce=int, validators=[DataRequired()])
+    submit = SubmitField('Добавить книгу')
 
 
-class AddDealerForm(FlaskForm):
-    """Добавление дилерского центра"""
+class AddgenreForm(FlaskForm):
+    """Добавление жанра"""
     name = StringField('Название', validators=[DataRequired()])
-    address = StringField('Адрес', validators=[DataRequired()])
-    submit = SubmitField('Добавить дилерский центр')
+    infoganre = StringField('Описание', validators=[DataRequired()])
+    submit = SubmitField('Добавить жанр')
 
 
 class SearchPriceForm(FlaskForm):
@@ -45,7 +45,7 @@ class SearchPriceForm(FlaskForm):
     submit = SubmitField('Поиск')
 
 
-class SearchDealerForm(FlaskForm):
-    """Форма поиска по дилерскому центру"""
-    dealer_id = SelectField('Номер дилерского центра', coerce=int, validators=[DataRequired()])
+class SearchgenreForm(FlaskForm):
+    """Форма поиска по жанру"""
+    genre_id = SelectField('Код издательства', coerce=int, validators=[DataRequired()])
     submit = SubmitField('Поиск')

@@ -49,8 +49,8 @@ class UsersModel:
         return rows
 
 
-class DealersModel:
-    """Сущность дилерских центров"""
+class genre_Book:
+    """Сущность книжных жанров"""
 
     def __init__(self, connection):
         self.connection = connection
@@ -58,56 +58,56 @@ class DealersModel:
     def init_table(self):
         """Инициализация таблицы"""
         cursor = self.connection.cursor()
-        cursor.execute('''CREATE TABLE IF NOT EXISTS dealers 
-                            (dealer_id INTEGER PRIMARY KEY AUTOINCREMENT, 
+        cursor.execute('''CREATE TABLE IF NOT EXISTS genres 
+                            (genre_id INTEGER PRIMARY KEY AUTOINCREMENT, 
                              name VARCHAR(20) UNIQUE,
-                             address VARCHAR(128)
+                             infoganre VARCHAR(128)
                         )''')
         cursor.close()
         self.connection.commit()
 
-    def insert(self, name, address):
-        """Добавление дилерского центра"""
+    def insert(self, name, infoganre):
+        """Добавление Жанра"""
         cursor = self.connection.cursor()
-        cursor.execute('''INSERT INTO dealers 
-                          (name, address) 
+        cursor.execute('''INSERT INTO genres 
+                          (name, infoganre) 
                           VALUES (?,?)''',
-                       (name, address))
+                       (name, infoganre))
         cursor.close()
         self.connection.commit()
 
     def exists(self, name):
-        """Поиск дилерского центра по названию"""
+        """Поиск жанра по названию"""
         cursor = self.connection.cursor()
-        cursor.execute("SELECT * FROM dealers WHERE name = ?",
+        cursor.execute("SELECT * FROM genres WHERE name = ?",
                        name)
         row = cursor.fetchone()
         return (True, row[0]) if row else (False,)
 
-    def get(self, dealer_id):
-        """Запрос дилерского центра по id"""
+    def get(self, genre_id):
+        """Запрос жанра по id"""
         cursor = self.connection.cursor()
-        cursor.execute("SELECT * FROM dealers WHERE dealer_id = ?", (str(dealer_id)))
+        cursor.execute("SELECT * FROM genres WHERE genre_id = ?", (str(genre_id),))
         row = cursor.fetchone()
         return row
 
     def get_all(self):
-        """Запрос всех дилерских центров"""
+        """Запрос всех жанров"""
         cursor = self.connection.cursor()
-        cursor.execute("SELECT * FROM dealers")
+        cursor.execute("SELECT * FROM genres")
         rows = cursor.fetchall()
         return rows
 
-    def delete(self, dealer_id):
-        """Удаление дилерского центра"""
+    def delete(self, genre_id):
+        """Удаление жанра"""
         cursor = self.connection.cursor()
-        cursor.execute('''DELETE FROM dealers WHERE dealer_id = ?''', (str(dealer_id)))
+        cursor.execute('''DELETE FROM genres WHERE genre_id = ?''', (str(genre_id)))
         cursor.close()
         self.connection.commit()
 
 
-class CarsModel:
-    """Сущность автомобилей"""
+class Book:
+    """Сущность книг"""
 
     def __init__(self, connection):
         self.connection = connection
@@ -115,102 +115,102 @@ class CarsModel:
     def init_table(self):
         """Инициализация таблицы"""
         cursor = self.connection.cursor()
-        cursor.execute('''CREATE TABLE IF NOT EXISTS cars 
-                            (car_id INTEGER PRIMARY KEY AUTOINCREMENT, 
+        cursor.execute('''CREATE TABLE IF NOT EXISTS books 
+                            (book_id INTEGER PRIMARY KEY AUTOINCREMENT, 
                              model VARCHAR(20),
                              price INTEGER,
                              power INTEGER,
                              color VARCHAR(20),
-                             dealer INTEGER,
+                             genre INTEGER,
                              rating VARCHAR(20),
                              col INTEGER
                         )''')
         cursor.close()
         self.connection.commit()
 
-    def insert(self, model, price, power, color, dealer):
-        """Добавление автомобиля"""
+    def insert(self, model, price, power, color, genre):
+        """Добавление книг"""
         cursor = self.connection.cursor()
-        cursor.execute('''INSERT INTO cars 
-                          (model, price, power, color, dealer, rating,col) 
+        cursor.execute('''INSERT INTO books 
+                          (model, price, power, color, genre, rating,col) 
                           VALUES (?,?,?,?,?,?,?)''',
-                       (model, str(price), str(power), color, str(dealer), '0', '0'))
+                       (model, str(price), str(power), color, str(genre), '0', '0'))
         cursor.close()
         self.connection.commit()
 
     def exists(self, model):
-        """Поиск автомобиля по модели"""
+        """Поиск книг по модели"""
         cursor = self.connection.cursor()
-        cursor.execute("SELECT * FROM cars WHERE model = ?",
+        cursor.execute("SELECT * FROM books WHERE model = ?",
                        model)
         row = cursor.fetchone()
         return (True, row[0]) if row else (False,)
 
-    def get(self, car_id):
-        """Поиск автомобиля по id"""
-        print(car_id)
+    def get(self, book_id):
+        """Поиск книг по id"""
+        print(book_id)
         cursor = self.connection.cursor()
-        cursor.execute("SELECT * FROM cars WHERE car_id = ?", (str(car_id),))
+        cursor.execute("SELECT * FROM books WHERE book_id = ?", (str(book_id),))
         row = cursor.fetchone()
         print(row)
         return row
 
     def get_all(self):
-        """Запрос всех автомобилей"""
+        """Запрос всех книг"""
         cursor = self.connection.cursor()
-        cursor.execute("SELECT model, price, car_id, power FROM cars")
+        cursor.execute("SELECT model, price, book_id, power FROM books")
         rows = cursor.fetchall()
         return rows
 
-    def delete(self, car_id):
-        """Удаление автомобиля"""
+    def delete(self, book_id):
+        """Удаление книг"""
         cursor = self.connection.cursor()
-        cursor.execute('''DELETE FROM cars WHERE car_id = ?''', (str(car_id),))
+        cursor.execute('''DELETE FROM books WHERE book_id = ?''', (str(book_id),))
         cursor.close()
         self.connection.commit()
 
     def get_by_price(self, start_price, end_price):
-        """Запрос автомобилей по цене"""
+        """Запрос книг по цене"""
         cursor = self.connection.cursor()
-        cursor.execute("SELECT model, price, car_id FROM cars WHERE price >= ? AND price <= ?",
+        cursor.execute("SELECT model, price, book_id FROM books WHERE price >= ? AND price <= ?",
                        (str(start_price), str(end_price)))
         row = cursor.fetchall()
         return row
 
-    def get_by_dealer(self, dealer_id):
-        """Запрос автомобилей по дилерскому центру"""
+    def get_by_genre(self, genre_id):
+        """Запрос книг по жанру"""
         cursor = self.connection.cursor()
-        cursor.execute("SELECT model, price, car_id FROM cars WHERE dealer = ?", (str(dealer_id),))
+        cursor.execute("SELECT model, price, book_id FROM books WHERE genre = ?", (str(genre_id),))
         row = cursor.fetchall()
         return row
 
-    def redak(self, car_id, colorp):
+    def redak(self, book_id, colorp):
         cursor = self.connection.cursor()
-        cursor.execute("SELECT * FROM cars WHERE car_id = ?", (str(car_id),))
+        cursor.execute("SELECT * FROM books WHERE book_id = ?", (str(book_id),))
         row = cursor.fetchone()
         print(row)
-        id, model, price, power, color, dealer, rating, col = row
+        id, model, price, power, color, genre, rating, col = row
         color = colorp
-        cursor.execute('''DELETE FROM cars WHERE car_id = ?''', (str(car_id),))
-        cursor.execute('''INSERT INTO cars 
-                          (model, price, power, color, dealer, rating,col) 
+        cursor.execute('''DELETE FROM books WHERE book_id = ?''', (str(book_id),))
+        cursor.execute('''INSERT INTO books 
+                          (model, price, power, color, genre, rating,col) 
                           VALUES (?,?,?,?,?,?,?)''',
-                       (model, str(price), str(power), color, str(dealer), rating, str(col)))
+                       (model, str(price), str(power), color, str(genre), rating, str(col)))
         cursor.close()
         self.connection.commit()
 
-    def sred(self, car_id, ratin):
+    def sred(self, book_id, ratin):
         cursor = self.connection.cursor()
-        cursor.execute("SELECT * FROM cars WHERE car_id = ?", (str(car_id),))
+        cursor.execute("SELECT * FROM books WHERE book_id = ?", (str(book_id),))
         row = cursor.fetchone()
-        id, model, price, power, color, dealer, rating, col = row
+        id, model, price, power, color, genre, rating, col = row
         col += 1
         print(row)
         rating = str(round((float(rating) * (col - 1) + int(ratin)) / col, 15))
-        cursor.execute('''DELETE FROM cars WHERE car_id = ?''', (str(car_id),))
-        cursor.execute('''INSERT INTO cars 
-                          (model, price, power, color, dealer, rating,col) 
+        cursor.execute('''DELETE FROM books WHERE book_id = ?''', (str(book_id),))
+        cursor.execute('''INSERT INTO books 
+                          (model, price, power, color, genre, rating,col) 
                           VALUES (?,?,?,?,?,?,?)''',
-                       (model, str(price), str(power), color, str(dealer), rating, str(col)))
+                       (model, str(price), str(power), color, str(genre), rating, str(col)))
         cursor.close()
         self.connection.commit()
