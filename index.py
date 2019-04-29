@@ -3,7 +3,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from models import UsersModel, CarsModel, DealersModel
 from forms import LoginForm, RegisterForm, AddCarForm, SearchPriceForm, SearchDealerForm, AddDealerForm
 from db import DB
-
+print('a')
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 db = DB()

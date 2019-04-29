@@ -180,18 +180,18 @@ class CarsModel:
     def get_by_dealer(self, dealer_id):
         """Запрос автомобилей по дилерскому центру"""
         cursor = self.connection.cursor()
-        cursor.execute("SELECT model, price, car_id FROM cars WHERE dealer = ?", (str(dealer_id)))
+        cursor.execute("SELECT model, price, car_id FROM cars WHERE dealer = ?", (str(dealer_id),))
         row = cursor.fetchall()
         return row
 
     def redak(self, car_id, colorp):
         cursor = self.connection.cursor()
-        cursor.execute("SELECT * FROM cars WHERE car_id = ?", (str(car_id)))
+        cursor.execute("SELECT * FROM cars WHERE car_id = ?", (str(car_id),))
         row = cursor.fetchone()
         print(row)
         id, model, price, power, color, dealer, rating, col = row
         color = colorp
-        cursor.execute('''DELETE FROM cars WHERE car_id = ?''', (str(car_id)))
+        cursor.execute('''DELETE FROM cars WHERE car_id = ?''', (str(car_id),))
         cursor.execute('''INSERT INTO cars 
                           (model, price, power, color, dealer, rating,col) 
                           VALUES (?,?,?,?,?,?,?)''',
